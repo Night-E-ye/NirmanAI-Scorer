@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Nirmaan AI - Debug UI</title>
+  <style>
+    body{font-family: Arial; margin:18px}
+    textarea{width:100%; height:160px; padding:8px; font-size:14px}
+    button{padding:8px 14px; font-size:15px}
+    pre{background:#111; color:#e6ffed; padding:12px; margin-top:12px; white-space:pre-wrap}
+    .err{color:#c62828}
+    .ok{color:#2e7d32}
+  </style>
+</head>
+<body>
+  <h2>Nirmaan AI Transcript Scorer — Debug UI</h2>
+
+  <p>
+    Server API URL: <b id="apiUrl"></b>
+  </p>
+
+  <textarea id="txt">Hello everyone, my name is Muskan. I am 13 years old and I study in class 8th.</textarea><br/>
+  <button id="btn">Score</button>
+  <button id="serveHint">Serve frontend (recommended)</button>
+
+  <h3>Result</h3>
+  <pre id="out">No request yet.</pre>
+
+  <h3>Debug console</h3>
+  <pre id="debug">Open browser devtools console for logs.</pre>
+
+<script>
+  // <-- Edit this if your backend uses a different host/port
+  const API = "http://127.0.0.1:8000/score";
+  document.getElementById('apiUrl').textContent = API;
+
+  const out = document.getElementById('out');
+  const dbg = document.getElementById('debug');
+  const btn = document.getElementById('btn');
+
+  async function doFetch(text, attempt=1){
+    out.textContent = 'Sending request (attempt ' + attempt + ')...';
+    dbg.textContent = 'fetch -> ' + API + '\\n';
+    console.log('Sending POST to', API);
+
+    try {
+      const resp = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // explicitly allow CORS mode
+        mode: 'cors',
+        body: JSON.stringify({ transcript: text })
+      });
+
+      dbg.textContent += 'HTTP ' + resp.status + ' ' + resp.statusText + '\\n';
+      const textBody = await resp.text();
+      dbg.textContent += 'body: ' + textBody + '\\n';
+      out.textContent = 'HTTP ' + resp.status + '\\n' + textBody;
+
+      // try parse JSON for pretty display
+      try {
+        const j = JSON.parse(textBody);
+        out.textContent = JSON.stringify(j, null, 2);
+      } catch(e) {
+        // non-JSON or error text already displayed
+      }
+
+    } catch (err) {
+      // network/CORS or other error
+      const msg = 'Fetch error: ' + (err && err.message ? err.message : String(err));
+      dbg.textContent += msg + '\\n';
+      out.textContent = msg + '\\n\\nCheck browser console (F12) for more details.';
+
+      console.error('Fetch failed:', err);
+
+      // if backend might still be starting (first model load), retry once after 3s
+      if (attempt === 1) {
+        dbg.textContent += 'Retrying in 3s...\\n';
+        setTimeout(()=> doFetch(text, 2), 3000);
+      }
+    }
+  }
+
+  btn.onclick = ()=> {
+    const text = document.getElementById('txt').value;
+    if (!text.trim()) {
+      out.textContent = 'Please enter transcript text.';
+      return;
+    }
+    doFetch(text, 1);
+  };
+
+  // helper: show quick serve command for Windows / mac
+  document.getElementById('serveHint').onclick = ()=> {
+    alert("To avoid file:// issues, run in your project folder:\\n\\npython -m http.server 8001\\n\\nThen open http://127.0.0.1:8001/index.html");
+  };
+</script>
+</body>
+</html>
