@@ -26,8 +26,11 @@ Per-criterion scores computed as weighted combination of:
 Rubric weights are respected as provided in the input Excel.
 
 ## Screenshots
+
+<img width="1874" height="510" alt="Screenshot 2025-11-23 225407" src="https://github.com/user-attachments/assets/cab40467-c47b-473e-8d6d-7b21f001fd7b" />
 <img width="742" height="664" alt="Screenshot 2025-11-23 225606" src="https://github.com/user-attachments/assets/9e78008f-8498-4fb3-b6af-cc32febe2061" />
 <img width="1753" height="275" alt="image" src="https://github.com/user-attachments/assets/938ef934-9945-4c66-a3c0-10b601bdcf73" />
+
 
 
 
